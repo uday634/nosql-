@@ -1,16 +1,30 @@
-const { MongoClient } = require('mongodb');
+const mongodb = require('mongodb');
+const MongoClient = mongodb.MongoClient;
 
-const mongoConnect = (callback) => {
-  MongoClient.connect('mongodb+srv://<uday>:<qy7bOANLhybRvKGH>@cluster0.k9fpmib.mongodb.net/?retryWrites=true&w=majority', { useUnifiedTopology: true })
+let _db;
+
+const mongoConnect = callback => {
+  MongoClient.connect(
+    'mongodb+srv://kumar:x3XuWFDdBhBzTYW2@cluster0.k9fpmib.mongodb.net/cart?retryWrites=true&w=majority'
+  )
     .then(client => {
-      console.log('Connected successfully');
-      callback(client);
+      console.log('successfully Connected to the mondodb');
+      _db = client.db()
+      callback();
     })
     .catch(err => {
-      console.error(err);
+      console.log(err);
+      throw err;
     });
+};
+
+const getDb = () => {
+  if(_db){
+    return _db;
+  }
+  throw 'No databse found:'
 }
 
-module.exports = mongoConnect;
-
+exports.mongoConnect = mongoConnect;
+exports.getDb = getDb;
 
