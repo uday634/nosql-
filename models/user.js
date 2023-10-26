@@ -23,15 +23,54 @@ class User {
   }
 
   addToCart(product) {
-    const cartProduct = this.cart.items.findIndex(cp => cp._id === product._id);
-    product.quantity = 1;
-    const updatedCart = { items: [{ proudctId: new mongodb.ObjectId(product._id), quantity: 1 }] };
+    const cartProductIndex = this.cart.items.findIndex(cp => cp.productId.toString() == product._id.toString());
+    let newQuantity = 1;
+    const updatedCartItems = [...this.cart.items];
+    if (cartProductIndex >= 0) {
+      newQuantity = this.cart.items[cartProductIndex].quantity + 1;
+      updatedCartItems[cartProductIndex].quantity = newQuantity;
+    } else {
+      updatedCartItems.push({ productId: new mongodb.ObjectId(product._id), quantity: newQuantity }); // Corrected property name to 'productId'
+    }
+    const updatedCart = { items: updatedCartItems };
     const db = getDb();
     return db.collection('users').updateOne(
       { _id: new mongodb.ObjectId(this._id) },
       { $set: { cart: updatedCart } }
     );
   }
+
+  getCart() {
+    const db = getDb();
+    const productIds = this.cart.items.map(i => new mongodb.ObjectId(i.productId)); // Convert product IDs to ObjectId
+  
+    return db.collection('products')
+      .find({ _id: { $in: productIds } })
+      .toArray()
+      .then(products => {
+        return products.map(p => {
+          const cartItem = this.cart.items.find(i => i.productId.toString() === p._id.toString());
+          return { ...p, quantity: cartItem.quantity };
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        throw err;
+      });
+  }
+
+  deleteItemFromCart(prodId){
+    const updatedCartItems =this.cart.items.filter(items => {
+      return items.productId.toString() !== prodId.toString();
+    });
+    const db = getDb();
+    return db.collection('users').updateOne(
+      { _id: new mongodb.ObjectId(this._id) },
+      { $set: { cart: {items:updatedCartItems} } }
+    );
+  }
+  
+  
 
   static findById(userId) {
     const db = getDb();
