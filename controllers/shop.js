@@ -53,13 +53,13 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-  req.user
-    .getCart()
+  User
+    .findOne({_id:req.user._id})
         .then(products => {
           res.render('shop/cart', {
             path: '/cart',
             pageTitle: 'Your Cart',
-            products: products
+            products: products.cart.items
           });
         })
     .catch(err => console.log(err));
@@ -67,13 +67,19 @@ exports.getCart = (req, res, next) => {
 
 exports.postCart = (req, res, next) => {
   const prodId = req.body.productId;
-  Product.findById(prodId).then(product => {
-    req.user.addToCart(product);
-    
-  }).then(result => {
-    console.log(result);
-    res.redirect('/cart')
-  })
+  console.log(prodId);
+  Product.findOne({ _id: prodId })
+    .then(product => {
+      return req.user.addToCart(product);
+    })
+    .then(result => {
+      console.log(result);
+      res.redirect('/cart');
+    })
+    .catch(err => {
+      console.error(err);
+    });
+  
   // let fetchedCart;
   // let newQuantity = 1;
   // req.user
