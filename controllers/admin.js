@@ -15,12 +15,12 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  console.log('figure', req.user)
   const product = new Product({
     title: title,
     price: price, 
     description: description, 
-    imageUrl: imageUrl 
+    imageUrl: imageUrl ,
+    userId : req.user._id
   });
   product    
     .save()
@@ -62,7 +62,7 @@ exports.postEditProduct = (req, res, next) => {
   const updatedPrice = req.body.price;
   const updatedImageUrl = req.body.imageUrl;
   const updatedDesc = req.body.description;
-  Product.updateOne({_id: prodId}, {$set:{title: updatedTitle, price: updatedPrice, description: updatedDesc, imageUrl: updatedImageUrl}})
+  Product.updateOne({_id: prodId}, {$set:{title: updatedTitle, price: updatedPrice, description: updatedDesc, imageUrl: updatedImageUrl, userId: req.user}})
     .then(result => {
       console.log('UPDATED PRODUCT!');
       res.redirect('/admin/products');
